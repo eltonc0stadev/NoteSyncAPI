@@ -36,4 +36,9 @@ public class UserController {
         return ninjaService.atualizarUsuario(id, user);
     }
 
+    @DeleteMapping("/deletar/{id}")
+    public void deletarUsuario(@PathVariable Long id) {
+        ninjaService.deletarUsuario(id);
+    }
+
 }

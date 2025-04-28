@@ -60,4 +60,4 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_KEY }}
-        script: pm2 restart java-app
+        script: bash deploy.sh

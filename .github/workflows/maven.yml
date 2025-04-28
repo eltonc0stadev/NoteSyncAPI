@@ -62,4 +62,4 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         script: |
           cd /home/ubuntu/
-          sudo docker restart ApiDocker
+          sudo pm2 restart java-app

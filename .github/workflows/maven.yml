@@ -41,7 +41,25 @@ jobs:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: release/*.jar
         tag: ${{ github.ref }}
-        release_name: "jar build"
+        release_name: "Build da versão de deploy"
         body: ""
         file_glob: true
         overwrite: true
+    - name: Copy JAR to server via SCP
+      uses: appleboy/scp-action@v1
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.PORT }}
+        source: "release/app.jar" 
+        target: "/home/ubuntu/app.jar"
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        script: | 
+          source ~/.nvm/nvm.sh
+          bash deploy.sh

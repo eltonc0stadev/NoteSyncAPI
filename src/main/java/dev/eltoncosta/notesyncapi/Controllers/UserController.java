@@ -1,6 +1,6 @@
 package dev.eltoncosta.notesyncapi.Controllers;
 
-import dev.eltoncosta.notesyncapi.Models.User;
+import dev.eltoncosta.notesyncapi.DTOs.UserDTO;
 import dev.eltoncosta.notesyncapi.Services.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,23 +17,27 @@ public class UserController {
     }
 
     @PostMapping("/criar")
-    public User criarUser(@RequestBody User user) {
+    public UserDTO criarUser(@RequestBody UserDTO user) {
         return ninjaService.criarUsuario(user);
     }
 
     @GetMapping("/listar")
-    public List<User> listarUsuarios() {
+    public List<UserDTO> listarUsuarios() {
         return ninjaService.listarUsuarios();
     }
 
-    @DeleteMapping("/buscar/{id}")
-    public User buscarUsuario(@PathVariable Long id) {
+    @GetMapping("/buscar/{id}")
+    public UserDTO buscarUsuario(@PathVariable Long id) {
         return ninjaService.buscarUsuario(id);
     }
 
     @PutMapping("/atualizar/{id}")
-    public User atualizarUsuario(@PathVariable Long id, @RequestBody User user) {
-        return ninjaService.atualizarUsuario(id, user);
+    public UserDTO atualizarUsuario(@PathVariable Long id, @RequestBody UserDTO user) {
+        UserDTO userAtualizado = ninjaService.atualizarUsuario(id, user);
+        if (userAtualizado != null) {
+            return userAtualizado;
+        }
+        return null;
     }
 
     @DeleteMapping("/deletar/{id}")

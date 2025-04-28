@@ -1,22 +1,29 @@
 package dev.eltoncosta.notesyncapi.Services;
 
+import dev.eltoncosta.notesyncapi.DTOs.UserDTO;
+import dev.eltoncosta.notesyncapi.Mappers.UserMapper;
 import dev.eltoncosta.notesyncapi.Models.User;
 import dev.eltoncosta.notesyncapi.Repositorys.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     // Criar usuario
-    public User criarUsuario(User user) {
+    public UserDTO criarUsuario(UserDTO user) {
+        User userModel = userMapper.map(user);
         if (user.getNome() == null || user.getNome().isEmpty()) {
             throw new IllegalArgumentException("Nome não pode ser nulo ou vazio");
         }
@@ -30,17 +37,20 @@ public class UserService {
         if (user.getSenha() == null || user.getSenha().isEmpty()) {
             throw new IllegalArgumentException("Senha não pode ser nula ou vazia");
         }
-        return userRepository.save(user);
+        userModel = userRepository.save(userModel);
+        return userMapper.map(userModel);
     }
 
     // Listar usuario
-    public List<User> listarUsuarios() {
-        return userRepository.findAll();
+    public List<UserDTO> listarUsuarios() {
+        List<User> users = userRepository.findAll();
+        return users.stream().map(userMapper::map).collect(Collectors.toList());
     }
 
     // Buscar usuario por id
-    public User buscarUsuario(Long id) {
-        return userRepository.findById(id).orElse(null);
+    public UserDTO buscarUsuario(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        return user.map(userMapper::map).orElse(null);
     }
 
     // Deletar usuario
@@ -49,13 +59,14 @@ public class UserService {
     }
 
     // Atualizar usuario
-    public User atualizarUsuario(Long id, User user) {
-        User existingUser = userRepository.findById(id).orElse(null);
-        if (existingUser != null) {
-            existingUser.setNome(user.getNome());
-            existingUser.setEmail(user.getEmail());
-            existingUser.setSenha(user.getSenha());
-            return userRepository.save(existingUser);
+    public UserDTO atualizarUsuario(Long id, UserDTO user) {
+        Optional<User> optionalUser = userRepository.findById(id);
+        if (optionalUser.isPresent()) {
+            User userExistente = optionalUser.get();
+            userExistente.setNome(user.getNome());
+            userExistente.setEmail(user.getEmail());
+            userExistente.setSenha(user.getSenha());
+            return userMapper.map(userRepository.save(userExistente));
         }
         return null;
     }

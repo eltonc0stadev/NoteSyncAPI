@@ -45,3 +45,14 @@ jobs:
         body: ""
         file_glob: true
         overwrite: true
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd /home/ubuntu/NoteSyncAPI
+          sudo su
+          curl -O https://github.com/eltonc0stadev/NoteSyncAPI/releases/latest/download/app.jar
+          docker restart

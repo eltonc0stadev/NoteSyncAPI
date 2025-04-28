@@ -55,4 +55,4 @@ jobs:
           cd /home/ubuntu/NoteSyncAPI
           sudo su
           curl -O https://github.com/eltonc0stadev/NoteSyncAPI/releases/latest/download/app.jar
-          docker restart
+          docker restart ApiDocker

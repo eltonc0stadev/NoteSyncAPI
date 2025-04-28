@@ -54,5 +54,5 @@ jobs:
         script: |
           cd /home/ubuntu/NoteSyncAPI
           sudo su
-          curl -O https://github.com/eltonc0stadev/NoteSyncAPI/releases/latest/download/app.jar
+          sudo curl -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -o /home/ubuntu/NoteSyncAPI https://api.github.com/repos/eltonc0stadev/NoteSyncAPI/releases/latest/assets/app.jar
           docker restart ApiDocker

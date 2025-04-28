@@ -45,6 +45,15 @@ jobs:
         body: ""
         file_glob: true
         overwrite: true
+    - name: Copy JAR to server via SCP
+      uses: appleboy/scp-action@v1
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.PORT }}
+        source: "target/app.jar" # <== Caminho onde o JAR foi gerado
+        target: "/home/ubuntu/NoteSyncAPI/app.jar" # <== Onde você quer salvar no servidor
     - name: Deploy via SSH
       uses: appleboy/ssh-action@v0.1.6
       with:
@@ -53,6 +62,4 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         script: |
           cd /home/ubuntu/NoteSyncAPI
-          sudo su
-          sudo curl -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -o /home/ubuntu/NoteSyncAPI https://api.github.com/repos/eltonc0stadev/NoteSyncAPI/releases/latest/assets/app.jar
-          docker restart ApiDocker
+          sudo docker restart ApiDocker

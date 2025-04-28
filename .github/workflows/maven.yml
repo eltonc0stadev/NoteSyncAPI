@@ -52,7 +52,7 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.PORT }}
-        source: "target/app.jar" # <== Caminho onde o JAR foi gerado
+        source: "release/app.jar" # <== Caminho onde o JAR foi gerado
         target: "/home/ubuntu/NoteSyncAPI/app.jar" # <== Onde você quer salvar no servidor
     - name: Deploy via SSH
       uses: appleboy/ssh-action@v0.1.6

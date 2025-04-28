@@ -41,7 +41,7 @@ jobs:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: release/*.jar
         tag: ${{ github.ref }}
-        release_name: "Versão de deploy automatico"
+        release_name: "jar build"
         body: ""
         file_glob: true
         overwrite: true

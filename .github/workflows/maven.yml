@@ -45,6 +45,12 @@ jobs:
         body: ""
         file_glob: true
         overwrite: true
+    - name: Download app.jar from GitHub Release
+      run: |
+        mkdir -p release
+        curl -L -o release/app.jar https://github.com/eltonc0stadev/NoteSyncAPI/releases/latest/download/app.jar
+    - name: Confirm file downloaded
+      run: ls -la release/
     - name: Copy JAR to server via SCP
       uses: appleboy/scp-action@v1
       with:

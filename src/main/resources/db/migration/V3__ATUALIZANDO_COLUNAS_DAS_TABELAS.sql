@@ -1,0 +1,7 @@
+ALTER TABLE usuario
+    MODIFY COLUMN data_criacao DATETIME NULL,
+    MODIFY COLUMN data_atualizacao DATETIME NULL;
+
+ALTER TABLE nota
+    MODIFY COLUMN data_criacao DATETIME NULL,
+    MODIFY COLUMN data_atualizacao DATETIME NULL;

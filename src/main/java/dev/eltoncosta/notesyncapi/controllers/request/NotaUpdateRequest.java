@@ -7,6 +7,5 @@ public record NotaUpdateRequest(Long id,
                                 String conteudo,
                                 Boolean arquivada,
                                 Boolean lixeira,
-                                Long donoId,
                                 List<Long> usuariosCompartilhadosIds) {
 }

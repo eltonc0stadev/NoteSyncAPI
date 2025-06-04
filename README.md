@@ -16,6 +16,32 @@ O objetivo principal do NoteSyncAPI é fornecer um backend robusto e flexível p
 - **Listagem de notas**: Visualize todas as suas anotações sincronizadas.
 - **Sincronização**: Acesse suas notas em diferentes dispositivos, com garantia de integridade dos dados.
 
+## Endpoints principais
+
+| Método | Rota                                      | Descrição                                                                 |
+|--------|-------------------------------------------|--------------------------------------------------------------------------|
+| POST   | /api/notesync/auth/registro               | Registra um novo usuário                                                 |
+| POST   | /api/notesync/auth/login                  | Realiza login e retorna o token JWT                                      |
+| GET    | /api/notesync/nota/listar                 | Lista todas as notas do usuário autenticado                              |
+| POST   | /api/notesync/nota/criar                  | Cria uma nova nota para o usuário autenticado                            |
+| PUT    | /api/notesync/nota/deletar                | Move uma nota para a lixeira                                             |
+| PUT    | /api/notesync/nota/restaurar              | Restaura uma nota da lixeira                                             |
+| PUT    | /api/notesync/nota/arquivar               | Arquiva uma nota                                                         |
+| PUT    | /api/notesync/nota/desarquivar            | Desarquiva uma nota                                                      |
+| PUT    | /api/notesync/nota/atualizar              | Atualiza título, conteúdo ou status de uma nota                          |
+| PUT    | /api/notesync/nota/atualizar-titulo       | Atualiza apenas o título de uma nota                                     |
+| PUT    | /api/notesync/nota/atualizar-conteudo     | Atualiza apenas o conteúdo de uma nota                                   |
+| PUT    | /api/notesync/nota/adicionar-amigo        | Adiciona usuários para compartilhar uma nota                             |
+| PUT    | /api/notesync/nota/remover-amigo          | Remove usuários compartilhados de uma nota                               |
+| GET    | /api/notesync/nota/arquivadas             | Lista todas as notas arquivadas do usuário autenticado                   |
+| GET    | /api/notesync/nota/lixeira                | Lista todas as notas na lixeira do usuário autenticado                   |
+| PUT    | /api/notesync/usuario/atualizar           | Atualiza dados do usuário autenticado                                    |
+| PUT    | /api/notesync/usuario/desativar           | Desativa a conta do usuário autenticado                                  |
+| PUT    | /api/notesync/usuario/ativar              | Reativa a conta do usuário autenticado                                   |
+| PUT    | /api/notesync/usuario/atualizar-senha     | Atualiza a senha do usuário autenticado                                  |
+
+> Todas as rotas (exceto registro e login) exigem autenticação via token JWT no header Authorization.
+
 ## Tecnologias Utilizadas
 
 - Java

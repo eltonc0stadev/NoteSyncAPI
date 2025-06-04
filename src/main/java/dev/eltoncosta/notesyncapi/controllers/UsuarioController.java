@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/notesync/usuario")
@@ -20,32 +22,46 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
     private final UsuarioMapper usuarioMapper;
 
-    @PostMapping("/registrar")
-    public ResponseEntity<UsuarioResumoResponse> criarUsuario(@RequestBody UsuarioRequest usuarioRequest) {
-        Usuario usuario = usuarioMapper.toUsuario(usuarioRequest);
-        Usuario usuarioCriado = usuarioService.criarUsuario(usuario);
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioMapper.toUsuarioResumoResponse(usuarioCriado));
-    }
-
     @PutMapping("/atualizar")
     public ResponseEntity<UsuarioResponse> atualizarUsuario(@RequestBody UsuarioUpdateRequest usuarioUpdateRequest) {
-        Usuario usuario = usuarioMapper.toUsuario(usuarioUpdateRequest);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorEmail(email);
+        // Atualiza apenas os campos permitidos do próprio usuário
+        usuario.setNome(usuarioUpdateRequest.nome() != null ? usuarioUpdateRequest.nome() : usuario.getNome());
+        usuario.setIdEstudante(usuarioUpdateRequest.idEstudante() != null ? usuarioUpdateRequest.idEstudante() : usuario.getIdEstudante());
+        if (usuarioUpdateRequest.senha() != null && !usuarioUpdateRequest.senha().isBlank()) {
+            usuario.setSenha(usuarioUpdateRequest.senha());
+        }
         Usuario usuarioAtualizado = usuarioService.atualizarUsuario(usuario);
         return ResponseEntity.status(HttpStatus.OK).body(usuarioMapper.toUsuarioResponse(usuarioAtualizado));
     }
 
     @PutMapping("/desativar")
-    public ResponseEntity<UsuarioResumoResponse> desativarUsuario(@RequestBody UsuarioUpdateRequest usuarioUpdateRequest) {
-        Usuario usuario = usuarioMapper.toUsuario(usuarioUpdateRequest);
+    public ResponseEntity<UsuarioResumoResponse> desativarUsuario() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorEmail(email);
         Usuario usuarioDesativado = usuarioService.desativarUsuario(usuario);
         return ResponseEntity.status(HttpStatus.OK).body(usuarioMapper.toUsuarioResumoResponse(usuarioDesativado));
     }
 
     @PutMapping("/ativar")
-    public ResponseEntity<UsuarioResumoResponse> ativarUsuario(@RequestBody UsuarioUpdateRequest usuarioUpdateRequest) {
-        Usuario usuario = usuarioMapper.toUsuario(usuarioUpdateRequest);
+    public ResponseEntity<UsuarioResumoResponse> ativarUsuario() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorEmail(email);
         Usuario usuarioAtivado = usuarioService.ativarUsuario(usuario);
         return ResponseEntity.status(HttpStatus.OK).body(usuarioMapper.toUsuarioResumoResponse(usuarioAtivado));
+    }
+
+    @PutMapping("/atualizar-senha")
+    public ResponseEntity<UsuarioResponse> atualizarSenha(@RequestBody String novaSenha) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Usuario usuario = usuarioService.buscarPorEmail(email);
+        Usuario usuarioAtualizado = usuarioService.atualizarSenha(usuario.getId(), novaSenha);
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioMapper.toUsuarioResponse(usuarioAtualizado));
     }
 
 }

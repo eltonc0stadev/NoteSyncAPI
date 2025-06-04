@@ -85,6 +85,18 @@ public class NotaService {
         return notaRepository.save(notaExistente);
     }
 
+    public Nota atualizarTitulo(Long id, String titulo) {
+        Nota nota = buscarNotaPorId(id);
+        nota.setTitulo(titulo);
+        return atualizarNota(nota);
+    }
+
+    public Nota atualizarConteudo(Long id, String conteudo) {
+        Nota nota = buscarNotaPorId(id);
+        nota.setConteudo(conteudo);
+        return atualizarNota(nota);
+    }
+
     public List<Nota> listarNotas(NotaResumoRequest notaRequest) {
         Long notaId = notaRequest.id();
         if (notaId == null) {
@@ -175,4 +187,126 @@ public class NotaService {
                 .toList();
     }
 
+    // NOVOS MÉTODOS PARA USO COM USUÁRIO AUTENTICADO (EMAIL)
+    public List<Nota> listarNotasPorEmailUsuario(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuário não encontrado"));
+        List<Nota> notasDono = notaRepository.findByDonoId(usuario.getId()).orElse(List.of());
+        List<Nota> notasCompartilhadas = notaRepository.findByUsuariosCompartilhados_Id(usuario.getId()).orElse(List.of());
+        List<Nota> todasNotas = new ArrayList<>();
+        todasNotas.addAll(notasDono);
+        todasNotas.addAll(notasCompartilhadas);
+        return todasNotas.stream()
+                .filter(n -> !n.getLixeira() && !n.getArquivada())
+                .distinct()
+                .toList();
+    }
+
+    public List<Nota> listarNotasArquivadasPorEmailUsuario(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuário não encontrado"));
+        List<Nota> notasDono = notaRepository.findByDonoId(usuario.getId()).orElse(List.of());
+        List<Nota> notasCompartilhadas = notaRepository.findByUsuariosCompartilhados_Id(usuario.getId()).orElse(List.of());
+        List<Nota> todasNotas = new ArrayList<>();
+        todasNotas.addAll(notasDono);
+        todasNotas.addAll(notasCompartilhadas);
+        return todasNotas.stream()
+                .filter(Nota::getArquivada)
+                .distinct()
+                .toList();
+    }
+
+    public List<Nota> listarNotasLixeiraPorEmailUsuario(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuário não encontrado"));
+        List<Nota> notasDono = notaRepository.findByDonoId(usuario.getId()).orElse(List.of());
+        List<Nota> notasCompartilhadas = notaRepository.findByUsuariosCompartilhados_Id(usuario.getId()).orElse(List.of());
+        List<Nota> todasNotas = new ArrayList<>();
+        todasNotas.addAll(notasDono);
+        todasNotas.addAll(notasCompartilhadas);
+        return todasNotas.stream()
+                .filter(Nota::getLixeira)
+                .distinct()
+                .toList();
+    }
+
+    public Nota criarNotaParaUsuario(dev.eltoncosta.notesyncapi.controllers.request.NotaRequest notaRequest, String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuário não encontrado"));
+        Nota nota = Nota.builder()
+                .titulo(notaRequest.titulo())
+                .conteudo(notaRequest.conteudo())
+                .arquivada(notaRequest.arquivada() != null ? notaRequest.arquivada() : false)
+                .lixeira(notaRequest.lixeira() != null ? notaRequest.lixeira() : false)
+                .dono(usuario)
+                .usuariosCompartilhados(notaRequest.usuariosCompartilhadosIds() != null ? usuarioRepository.findAllById(notaRequest.usuariosCompartilhadosIds()) : new ArrayList<>())
+                .build();
+        return notaRepository.save(nota);
+    }
+
+    public Nota arquivarNotaParaUsuario(dev.eltoncosta.notesyncapi.controllers.request.NotaUpdateRequest notaRequest, String email) {
+        Nota nota = this.buscarNotaDoUsuario(notaRequest.id(), email);
+        nota.setArquivada(true);
+        return this.atualizarNota(nota);
+    }
+
+    public Nota deletarNotaParaUsuario(dev.eltoncosta.notesyncapi.controllers.request.NotaUpdateRequest notaRequest, String email) {
+        Nota nota = this.buscarNotaDoUsuario(notaRequest.id(), email);
+        nota.setLixeira(true);
+        return this.atualizarNota(nota);
+    }
+
+    public Nota restaurarNotaParaUsuario(dev.eltoncosta.notesyncapi.controllers.request.NotaUpdateRequest notaRequest, String email) {
+        Nota nota = this.buscarNotaDoUsuario(notaRequest.id(), email);
+        nota.setLixeira(false);
+        return this.atualizarNota(nota);
+    }
+
+    public Nota desarquivarNotaParaUsuario(dev.eltoncosta.notesyncapi.controllers.request.NotaUpdateRequest notaRequest, String email) {
+        Nota nota = this.buscarNotaDoUsuario(notaRequest.id(), email);
+        nota.setArquivada(false);
+        return this.atualizarNota(nota);
+    }
+
+    public Nota atualizarNotaParaUsuario(dev.eltoncosta.notesyncapi.controllers.request.NotaUpdateRequest notaRequest, String email) {
+        Nota nota = this.buscarNotaDoUsuario(notaRequest.id(), email);
+        if (notaRequest.titulo() != null) nota.setTitulo(notaRequest.titulo());
+        if (notaRequest.conteudo() != null) nota.setConteudo(notaRequest.conteudo());
+        if (notaRequest.arquivada() != null) nota.setArquivada(notaRequest.arquivada());
+        if (notaRequest.lixeira() != null) nota.setLixeira(notaRequest.lixeira());
+        if (notaRequest.usuariosCompartilhadosIds() != null) {
+            nota.setUsuariosCompartilhados(usuarioRepository.findAllById(notaRequest.usuariosCompartilhadosIds()));
+        }
+        return this.atualizarNota(nota);
+    }
+
+    public Nota atualizarTituloParaUsuario(Long id, String titulo, String email) {
+        Nota nota = this.buscarNotaDoUsuario(id, email);
+        nota.setTitulo(titulo);
+        return this.atualizarNota(nota);
+    }
+
+    public Nota atualizarConteudoParaUsuario(Long id, String conteudo, String email) {
+        Nota nota = this.buscarNotaDoUsuario(id, email);
+        nota.setConteudo(conteudo);
+        return this.atualizarNota(nota);
+    }
+
+    public Nota buscarNotaPorIdParaUsuario(Long notaId, String email) {
+        return buscarNotaDoUsuario(notaId, email);
+    }
+
+    // Busca uma nota pelo id e garante que o usuário autenticado (dono ou compartilhado) tenha acesso
+    private Nota buscarNotaDoUsuario(Long notaId, String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuário não encontrado"));
+        Nota nota = notaRepository.findById(notaId)
+                .orElseThrow(() -> new NotaNotFoundException("Nota não encontrada"));
+        boolean isDono = nota.getDono().getId().equals(usuario.getId());
+        boolean isCompartilhada = nota.getUsuariosCompartilhados().stream().anyMatch(u -> u.getId().equals(usuario.getId()));
+        if (!isDono && !isCompartilhada) {
+            throw new NotaNotFoundException("Nota não pertence ao usuário ou não está compartilhada com ele");
+        }
+        return nota;
+    }
 }

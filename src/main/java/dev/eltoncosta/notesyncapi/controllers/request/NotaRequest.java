@@ -6,6 +6,5 @@ public record NotaRequest(String titulo,
                           String conteudo,
                           Boolean arquivada,
                           Boolean lixeira,
-                          Long donoId,
                           List<Long> usuariosCompartilhadosIds) {
 }

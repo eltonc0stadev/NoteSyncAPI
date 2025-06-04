@@ -8,5 +8,5 @@ import java.util.Optional;
 
 public interface NotaRepository extends JpaRepository<Nota, Long> {
     Optional<List<Nota>> findByDonoId(Long donoId);
-    Optional<List<Nota>> findByUsuariosCompartilhados_Id(Long usuarioId);
+    Optional<List<Nota>> findByUsuariosCompartilhados_Id(Long notaId);
 }

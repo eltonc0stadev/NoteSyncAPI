@@ -6,6 +6,8 @@ import dev.eltoncosta.notesyncapi.entities.Nota;
 import dev.eltoncosta.notesyncapi.mapper.NotaMapper;
 import dev.eltoncosta.notesyncapi.services.NotaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,84 +21,84 @@ public class NotaController {
     private final NotaMapper notaMapper;
 
     @GetMapping("/listar")
-    public List<NotaResponse> listarNotas(@RequestBody NotaUpdateRequest notaRequest) {
+    public ResponseEntity<List<NotaResponse>> listarNotas(@RequestBody NotaResumoRequest notaRequest) {
         List<Nota> notaList = notaService.listarNotas(notaRequest);
         if (!notaList.isEmpty()) {
-            return notaList.stream()
+            return ResponseEntity.status(HttpStatus.FOUND).body(notaList.stream()
                     .map(notaMapper::toNotaResponse)
-                    .toList();
+                    .toList());
         }
-        return List.of();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     @PostMapping("/criar")
-    public NotaResponse criarNota(@RequestBody NotaRequest nota) {
+    public ResponseEntity<NotaResponse> criarNota(@RequestBody NotaRequest nota) {
         Nota notaCriada = notaService.criarNota(notaMapper.toNota(nota));
-        return notaMapper.toNotaResponse(notaCriada);
+        return ResponseEntity.status(HttpStatus.CREATED).body(notaMapper.toNotaResponse(notaCriada));
     }
 
     @PutMapping("/deletar")
-    public NotaResponse deletarNota(@RequestBody NotaUpdateRequest nota) {
+    public ResponseEntity<NotaResponse> deletarNota(@RequestBody NotaUpdateRequest nota) {
         Nota notaDeletada = notaService.deletarNota(notaMapper.toNota(nota));
-        return notaMapper.toNotaResponse(notaDeletada);
+        return ResponseEntity.status(HttpStatus.OK).body(notaMapper.toNotaResponse(notaDeletada));
     }
 
     @PutMapping("/restaurar")
-    public NotaResponse restaurarNota(@RequestBody NotaUpdateRequest nota) {
+    public ResponseEntity<NotaResponse> restaurarNota(@RequestBody NotaUpdateRequest nota) {
         Nota notaRestaurada = notaService.restaurarNota(notaMapper.toNota(nota));
-        return notaMapper.toNotaResponse(notaRestaurada);
+        return ResponseEntity.status(HttpStatus.OK).body(notaMapper.toNotaResponse(notaRestaurada));
     }
 
     @PutMapping("/arquivar")
-    public NotaResponse arquivarNota(@RequestBody NotaUpdateRequest nota) {
+    public ResponseEntity<NotaResponse> arquivarNota(@RequestBody NotaUpdateRequest nota) {
         Nota notaArquivada = notaService.arquivarNota(notaMapper.toNota(nota));
-        return notaMapper.toNotaResponse(notaArquivada);
+        return ResponseEntity.ok(notaMapper.toNotaResponse(notaArquivada));
     }
 
     @PutMapping("/desarquivar")
-    public NotaResponse desarquivarNota(@RequestBody NotaUpdateRequest nota) {
+    public ResponseEntity<NotaResponse> desarquivarNota(@RequestBody NotaUpdateRequest nota) {
         Nota notaDesarquivada = notaService.desarquivarNota(notaMapper.toNota(nota));
-        return notaMapper.toNotaResponse(notaDesarquivada);
+        return ResponseEntity.ok(notaMapper.toNotaResponse(notaDesarquivada));
     }
 
     @PutMapping("/atualizar")
-    public NotaResponse atualizarNota(@RequestBody NotaUpdateRequest nota) {
+    public ResponseEntity<NotaResponse> atualizarNota(@RequestBody NotaUpdateRequest nota) {
         Nota notaAtualizada = notaService.atualizarNota(notaMapper.toNota(nota));
-        return notaMapper.toNotaResponse(notaAtualizada);
+        return ResponseEntity.status(HttpStatus.OK).body(notaMapper.toNotaResponse(notaAtualizada));
     }
 
     @PutMapping("/adicionar-amigo")
-    public NotaResponse adicionarUsuarioCompartilhado(@RequestBody NotaAddUserComp notaAddUserCompRequest) {
+    public ResponseEntity<NotaResponse> adicionarUsuarioCompartilhado(@RequestBody NotaAddUserComp notaAddUserCompRequest) {
         Nota nota = notaService.buscarNotaPorId(notaAddUserCompRequest.idNota());
-        return notaMapper.toNotaResponse(notaService.adicionarUsuarioCompartilhado(nota, notaAddUserCompRequest.idUsersComp()));
+        return ResponseEntity.status(HttpStatus.OK).body(notaMapper.toNotaResponse(notaService.adicionarUsuarioCompartilhado(nota, notaAddUserCompRequest.idUsersComp())));
     }
 
     @PutMapping("/remover-amigo")
-    public NotaResponse removerUsuarioCompartilhado(@RequestBody NotaAddUserComp notaAddUserCompRequest) {
+    public ResponseEntity<NotaResponse> removerUsuarioCompartilhado(@RequestBody NotaAddUserComp notaAddUserCompRequest) {
         Nota nota = notaService.buscarNotaPorId(notaAddUserCompRequest.idNota());
-        return notaMapper.toNotaResponse(notaService.removerUsuariosCompartilhados(nota, notaAddUserCompRequest.idUsersComp()));
+        return ResponseEntity.ok(notaMapper.toNotaResponse(notaService.removerUsuariosCompartilhados(nota, notaAddUserCompRequest.idUsersComp())));
     }
 
     @GetMapping("/arquivadas")
-    public List<NotaResponse> listarNotasArquivadas(@RequestBody UsuarioResumoRequest usuarioRequest) {
+    public ResponseEntity<List<NotaResponse>> listarNotasArquivadas(@RequestBody UsuarioResumoRequest usuarioRequest) {
         List<Nota> notasArquivadas = notaService.listarNotasArquivadas(usuarioRequest);
         if (!notasArquivadas.isEmpty()) {
-            return notasArquivadas.stream()
+            return ResponseEntity.status(HttpStatus.FOUND).body(notasArquivadas.stream()
                     .map(notaMapper::toNotaResponse)
-                    .toList();
+                    .toList());
         }
-        return List.of();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     @GetMapping("/lixeira")
-    public List<NotaResponse> listarNotasLixeira(@RequestBody UsuarioResumoRequest usuarioRequest) {
+    public ResponseEntity<List<NotaResponse>> listarNotasLixeira(@RequestBody UsuarioResumoRequest usuarioRequest) {
         List<Nota> notasLixeira = notaService.listarNotasLixeira(usuarioRequest);
         if (!notasLixeira.isEmpty()) {
-            return notasLixeira.stream()
+            return ResponseEntity.status(HttpStatus.FOUND).body(notasLixeira.stream()
                     .map(notaMapper::toNotaResponse)
-                    .toList();
+                    .toList());
         }
-        return List.of();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
 }

@@ -8,6 +8,8 @@ import dev.eltoncosta.notesyncapi.entities.Usuario;
 import dev.eltoncosta.notesyncapi.mapper.UsuarioMapper;
 import dev.eltoncosta.notesyncapi.services.UsuarioService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,32 +20,32 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
     private final UsuarioMapper usuarioMapper;
 
-    @PostMapping("/criar")
-    public UsuarioResumoResponse criarUsuario(@RequestBody UsuarioRequest usuarioRequest) {
+    @PostMapping("/registrar")
+    public ResponseEntity<UsuarioResumoResponse> criarUsuario(@RequestBody UsuarioRequest usuarioRequest) {
         Usuario usuario = usuarioMapper.toUsuario(usuarioRequest);
         Usuario usuarioCriado = usuarioService.criarUsuario(usuario);
-        return usuarioMapper.toUsuarioResumoResponse(usuarioCriado);
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioMapper.toUsuarioResumoResponse(usuarioCriado));
     }
 
     @PutMapping("/atualizar")
-    public UsuarioResponse atualizarUsuario(@RequestBody UsuarioUpdateRequest usuarioUpdateRequest) {
+    public ResponseEntity<UsuarioResponse> atualizarUsuario(@RequestBody UsuarioUpdateRequest usuarioUpdateRequest) {
         Usuario usuario = usuarioMapper.toUsuario(usuarioUpdateRequest);
         Usuario usuarioAtualizado = usuarioService.atualizarUsuario(usuario);
-        return usuarioMapper.toUsuarioResponse(usuarioAtualizado);
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioMapper.toUsuarioResponse(usuarioAtualizado));
     }
 
     @PutMapping("/desativar")
-    public UsuarioResumoResponse desativarUsuario(@RequestBody UsuarioUpdateRequest usuarioUpdateRequest) {
+    public ResponseEntity<UsuarioResumoResponse> desativarUsuario(@RequestBody UsuarioUpdateRequest usuarioUpdateRequest) {
         Usuario usuario = usuarioMapper.toUsuario(usuarioUpdateRequest);
         Usuario usuarioDesativado = usuarioService.desativarUsuario(usuario);
-        return usuarioMapper.toUsuarioResumoResponse(usuarioDesativado);
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioMapper.toUsuarioResumoResponse(usuarioDesativado));
     }
 
     @PutMapping("/ativar")
-    public UsuarioResumoResponse ativarUsuario(@RequestBody UsuarioUpdateRequest usuarioUpdateRequest) {
+    public ResponseEntity<UsuarioResumoResponse> ativarUsuario(@RequestBody UsuarioUpdateRequest usuarioUpdateRequest) {
         Usuario usuario = usuarioMapper.toUsuario(usuarioUpdateRequest);
         Usuario usuarioAtivado = usuarioService.ativarUsuario(usuario);
-        return usuarioMapper.toUsuarioResumoResponse(usuarioAtivado);
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioMapper.toUsuarioResumoResponse(usuarioAtivado));
     }
 
 }

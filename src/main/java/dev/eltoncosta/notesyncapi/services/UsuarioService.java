@@ -1,6 +1,7 @@
 package dev.eltoncosta.notesyncapi.services;
 
 import dev.eltoncosta.notesyncapi.entities.Usuario;
+import dev.eltoncosta.notesyncapi.exceptions.UsuarioNotFoundException;
 import dev.eltoncosta.notesyncapi.repositories.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ public class UsuarioService {
 
     public Usuario criarUsuario(Usuario usuario) {
         if (usuario == null || usuario.getNome() == null || usuario.getEmail() == null || usuario.getSenha() == null || usuario.getIdEstudante() == null) {
-            throw new IllegalArgumentException("Usuário inválido");
+            throw new UsuarioNotFoundException("Usuário inválido ou não encontrado");
         }
         usuario.setDesativado(false);
         return usuarioRepository.save(usuario);
@@ -24,11 +25,11 @@ public class UsuarioService {
 
     public Usuario atualizarUsuario(Usuario usuario) {
         if (usuario == null || usuario.getId() == null) {
-            throw new IllegalArgumentException("Usuário inválido");
+            throw new UsuarioNotFoundException("Usuário inválido ou não encontrado");
         }
         Optional<Usuario> optionalUsuario = usuarioRepository.findById(usuario.getId());
         if (optionalUsuario.isEmpty()) {
-            throw new RuntimeException("Usuário não encontrado");
+            throw new UsuarioNotFoundException("Usuário não encontrado ou inexistente");
         }
         Usuario usuarioExistente = optionalUsuario.get();
         usuarioExistente.setId(usuario.getId());
@@ -62,7 +63,7 @@ public class UsuarioService {
 
     private Usuario obterUsuarioPorID(Long id) {
         return usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuário não encontrado ou inexistente"));
     }
 
 }

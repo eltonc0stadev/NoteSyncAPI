@@ -1,17 +1,18 @@
 package dev.eltoncosta.notesyncapi.services;
 
+import dev.eltoncosta.notesyncapi.controllers.request.NotaResumoRequest;
 import dev.eltoncosta.notesyncapi.controllers.request.NotaUpdateRequest;
 import dev.eltoncosta.notesyncapi.controllers.request.UsuarioResumoRequest;
-import dev.eltoncosta.notesyncapi.controllers.request.UsuarioUpdateRequest;
 import dev.eltoncosta.notesyncapi.entities.Nota;
 import dev.eltoncosta.notesyncapi.entities.Usuario;
+import dev.eltoncosta.notesyncapi.exceptions.NotaNotFoundException;
+import dev.eltoncosta.notesyncapi.exceptions.UsuarioNotFoundException;
 import dev.eltoncosta.notesyncapi.repositories.NotaRepository;
 import dev.eltoncosta.notesyncapi.repositories.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,15 +23,15 @@ public class NotaService {
 
     public Nota buscarNotaPorId(Long id) {
         return notaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Nota não encontrada"));
+                .orElseThrow(() -> new NotaNotFoundException("Nota não encontrada"));
     }
 
     public Nota criarNota(Nota nota) {
         if (nota == null || nota.getTitulo() == null || nota.getConteudo() == null || nota.getDono() == null) {
-            throw new IllegalArgumentException("Nota inválida");
+            throw new NotaNotFoundException("Nota inválida");
         }
         if (!usuarioRepository.existsById(nota.getDono().getId())) {
-            throw new IllegalArgumentException("Usuário não encontrado");
+            throw new UsuarioNotFoundException("Usuário não encontrado ou inexistente");
         }
         nota.setLixeira(false);
         nota.setArquivada(false);
@@ -59,10 +60,10 @@ public class NotaService {
 
     public Nota atualizarNota(Nota nota) {
         if (nota == null || nota.getId() == null) {
-            throw new IllegalArgumentException("Nota inválida");
+            throw new NotaNotFoundException("Nota inválida");
         }
         Nota notaExistente = notaRepository.findById(nota.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Nota não encontrada"));
+                .orElseThrow(() -> new NotaNotFoundException("Nota Invalida"));
 
         notaExistente.setTitulo(nota.getTitulo() != null ? nota.getTitulo() : notaExistente.getTitulo());
         notaExistente.setConteudo(nota.getConteudo() != null ? nota.getConteudo() : notaExistente.getConteudo());
@@ -84,23 +85,32 @@ public class NotaService {
         return notaRepository.save(notaExistente);
     }
 
-    public List<Nota> listarNotas(NotaUpdateRequest notaRequest) {
-        Long id = notaRequest.id();
-        List<Nota> notasDono = notaRepository.findByDonoId(id).orElse(List.of());
-        List<Nota> notasCompartilhadas = notaRepository.findByUsuariosCompartilhados_Id(id).orElse(List.of());
+    public List<Nota> listarNotas(NotaResumoRequest notaRequest) {
+        Long notaId = notaRequest.id();
+        if (notaId == null) {
+            throw new NotaNotFoundException("ID da nota não pode ser nulo");
+        }
+        Nota nota = notaRepository.findById(notaId)
+                .orElseThrow(() -> new NotaNotFoundException("Nota não encontrada"));
+        Long donoId = nota.getDono().getId();
+        if (!usuarioRepository.existsById(donoId)) {
+            throw new UsuarioNotFoundException("Usuário não encontrado ou inexistente");
+        }
+        List<Nota> notasDono = notaRepository.findByDonoId(donoId).orElse(List.of());
+        List<Nota> notasCompartilhadas = notaRepository.findByUsuariosCompartilhados_Id(notaId).orElse(List.of());
         List<Nota> todasNotas = new ArrayList<>();
         todasNotas.addAll(notasDono);
         todasNotas.addAll(notasCompartilhadas);
         return todasNotas.stream()
-                .filter(nota -> !nota.getLixeira())
-                .filter(nota -> !nota.getArquivada())
+                .filter(nota1 -> !nota1.getLixeira())
+                .filter(nota1 -> !nota1.getArquivada())
                 .distinct()
                 .toList();
     }
 
     public Nota adicionarUsuarioCompartilhado(Nota nota, List<Long> usuariosCompartilhadosNovos) {
         Nota notaExistente = notaRepository.findById(nota.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Nota não encontrada"));
+                .orElseThrow(() -> new NotaNotFoundException("Nota invalida"));
         List<Usuario> usuariosNovos = usuarioRepository.findAllById(usuariosCompartilhadosNovos);
         List<Usuario> usuariosCompartilhados = nota.getUsuariosCompartilhados();
 
@@ -128,7 +138,7 @@ public class NotaService {
 
     public Nota removerUsuariosCompartilhados(Nota nota, List<Long> usuarioIds) {
         Nota notaExistente = notaRepository.findById(nota.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Nota não encontrada"));
+                .orElseThrow(() -> new NotaNotFoundException("Nota não encontrada"));
 
         List<Usuario> usuariosCompartilhados = notaExistente.getUsuariosCompartilhados();
         if (usuariosCompartilhados != null && usuarioIds != null) {

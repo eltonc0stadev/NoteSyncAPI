@@ -25,5 +25,14 @@ public class AuthController {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }
-}
 
+    @GetMapping("/validar-token")
+    public ResponseEntity<Boolean> validarToken(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.ok(false);
+        }
+        String token = authHeader.substring(7);
+        boolean valido = authService.validarToken(token);
+        return ResponseEntity.ok(valido);
+    }
+}

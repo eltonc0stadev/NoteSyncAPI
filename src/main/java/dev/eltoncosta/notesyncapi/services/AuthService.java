@@ -41,5 +41,8 @@ public class AuthService {
         String token = jwtUtil.generateToken(usuario.getEmail());
         return new AuthResponse(token, "Bearer");
     }
-}
 
+    public boolean validarToken(String token) {
+        return jwtUtil.isTokenValid(token);
+    }
+}

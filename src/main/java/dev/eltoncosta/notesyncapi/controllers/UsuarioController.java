@@ -1,18 +1,19 @@
 package dev.eltoncosta.notesyncapi.controllers;
 
-import dev.eltoncosta.notesyncapi.controllers.request.UsuarioRequest;
 import dev.eltoncosta.notesyncapi.controllers.request.UsuarioUpdateRequest;
 import dev.eltoncosta.notesyncapi.controllers.response.UsuarioResponse;
 import dev.eltoncosta.notesyncapi.controllers.response.UsuarioResumoResponse;
+import dev.eltoncosta.notesyncapi.controllers.response.UserDetailsResponse;
 import dev.eltoncosta.notesyncapi.entities.Usuario;
 import dev.eltoncosta.notesyncapi.mapper.UsuarioMapper;
+import dev.eltoncosta.notesyncapi.security.JwtUtil;
 import dev.eltoncosta.notesyncapi.services.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/notesync/usuario")
@@ -21,6 +22,7 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
     private final UsuarioMapper usuarioMapper;
+    private final JwtUtil jwtUtil;
 
     @PutMapping("/atualizar")
     public ResponseEntity<UsuarioResponse> atualizarUsuario(@RequestBody UsuarioUpdateRequest usuarioUpdateRequest) {
@@ -62,6 +64,23 @@ public class UsuarioController {
         Usuario usuario = usuarioService.buscarPorEmail(email);
         Usuario usuarioAtualizado = usuarioService.atualizarSenha(usuario.getId(), novaSenha);
         return ResponseEntity.status(HttpStatus.OK).body(usuarioMapper.toUsuarioResponse(usuarioAtualizado));
+    }
+
+    @GetMapping("/info")
+    public ResponseEntity<UserDetailsResponse> buscarInfoUsuario() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            String email = authentication.getName();
+            Usuario usuario = usuarioService.buscarPorEmail(email);
+            UserDetailsResponse userDetails = new UserDetailsResponse(
+                usuario.getId(),
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getIdEstudante()
+            );
+            return ResponseEntity.ok(userDetails);
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
 }

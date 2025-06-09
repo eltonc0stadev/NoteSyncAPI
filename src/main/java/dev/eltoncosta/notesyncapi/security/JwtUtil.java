@@ -1,5 +1,7 @@
 package dev.eltoncosta.notesyncapi.security;
 
+import dev.eltoncosta.notesyncapi.controllers.response.UserDetailsResponse;
+import dev.eltoncosta.notesyncapi.entities.Usuario;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -16,9 +18,12 @@ public class JwtUtil {
     private final long EXPIRATION = 60 * 60 * 24000; // 24 hora em ms
     private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
-    public String generateToken(String subject) {
+    public String generateToken(Usuario usuario) {
         return Jwts.builder()
-                .setSubject(subject)
+                .setSubject(usuario.getEmail())
+                .claim("id", usuario.getId())
+                .claim("nome", usuario.getNome())
+                .claim("idEstudante", usuario.getIdEstudante())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -53,5 +58,14 @@ public class JwtUtil {
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
-}
 
+    public UserDetailsResponse extractUserDetails(String token) {
+        Claims claims = extractAllClaims(token);
+        return new UserDetailsResponse(
+            claims.get("id", Long.class),
+            claims.get("nome", String.class),
+            claims.getSubject(), // email
+            claims.get("idEstudante", String.class)
+        );
+    }
+}

@@ -38,7 +38,7 @@ public class AuthService {
         if (!passwordEncoder.matches(request.senha(), usuario.getSenha())) {
             throw new RuntimeException("Usuário ou senha inválidos");
         }
-        String token = jwtUtil.generateToken(usuario.getEmail());
+        String token = jwtUtil.generateToken(usuario);
         return new AuthResponse(token, "Bearer");
     }
 
